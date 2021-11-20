@@ -1,3 +1,5 @@
+use rand::seq::SliceRandom;
+
 #[derive(Debug)]
 /*Una transizione contiene un vettore di archi entranti e uno di archi uscenti.
 Ogni arco è composto da (usize,u8) dove usize è l'indice del posto associato
@@ -30,11 +32,14 @@ impl Transition {
 
 fn main() {
     //Creo la marcatura iniziale e le transizioni
-    let mut places: Vec<i32> = vec![0, 1, 0, 0, 1];
-    let tra1 = Transition::new(&[(0, 1), (1, 1)], &[(2, 1), (1, 1)]);
-    let tra2 = Transition::new(&[(2, 1), (3, 1)], &[(4, 1)]);
-    let tra3 = Transition::new(&[(4, 1)], &[(0, 1), (3, 1)]);
-    let transizioni = vec![tra1, tra2, tra3];
+    let mut places: Vec<i32> = vec![0, 0, 1, 0, 1];
+    let transizioni = vec![Transition::new(&[(0, 1)], &[(1, 1), (4, 1)]),
+                               Transition::new(&[(3, 1)], &[(4, 1)]),
+                               Transition::new(&[(1, 1)], &[(2, 1)]),
+                               Transition::new(&[(4, 1)], &[(3, 1)]),
+                               Transition::new(&[(2, 1)], &[(0, 1)])];
+    let len=transizioni.len();
+    let mut ordine: Vec<usize> = (0..len).collect();
 
     //Stampo le transizioni e la marcatura iniziale
     for (i, j) in transizioni.iter().enumerate() {
@@ -42,11 +47,16 @@ fn main() {
     }
     println!("In -> {:?}", &places);
 
+    let mut rng = rand::thread_rng();
+    let mut tra: &Transition;
+
     //Simulo la rete
     let mut go_on;
-    for _ in 0..5 {
+    for _ in 0..10 {
         go_on = false;
-        for (i, tra) in transizioni.iter().enumerate() {
+        ordine.shuffle(&mut rng);
+        for i in ordine.iter() {
+            tra = &transizioni[*i];
             if tra.is_active(&places) {
                 tra.enable(&mut places);
                 println!("T{} -> {:?}", i + 1, &places);
